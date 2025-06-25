@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-<head><meta charset="UTF-8"><title>偏好填寫 - 使用者A</title></head>
+<head><meta charset="UTF-8"><title>性行為偏好配對</title></head>
 <body>
-  <h2>使用者 A：請填寫你的偏好與行為項目</h2>
+  <h2>主要配對者：請填寫妳個人的性行為偏好類型與喜好程度，由非常喜歡(3分)-普通(0分)到非常不喜歡(-3分)</h2>
   <div>
-    <input id="b1" placeholder="行為 1" /><br>
-    <input id="b2" /><br>
-    <input id="b3" /><br>
-    <input id="b4" /><br>
-    <input id="b5" /><br><br>
-    <input type="number" id="a1" min="-3" max="3" /><br>
-    <input type="number" id="a2" min="-3" max="3" /><br>
-    <input type="number" id="a3" min="-3" max="3" /><br>
-    <input type="number" id="a4" min="-3" max="3" /><br>
-    <input type="number" id="a5" min="-3" max="3" /><br><br>
-    <input type="email" id="emailB" placeholder="使用者 B 的 email" /><br><br>
+    <input id="b1" placeholder="性行為偏好1" /><br>
+    <input type="number" id="a1" min="-3" max="3" placeholder="喜好程度" /><br>
+    <input id="b2" placeholder="性行為偏好2" /><br>
+    <input type="number" id="a2" min="-3" max="3" placeholder="喜好程度" /><br>
+    <input id="b3" placeholder="性行為偏好3" /><br>
+    <input type="number" id="a3" min="-3" max="3" placeholder="喜好程度" /><br>
+    <input id="b4" placeholder="性行為偏好4" /><br>
+    <input type="number" id="a4" min="-3" max="3" placeholder="喜好程度" /><br>
+    <input id="b5" placeholder="性行為偏好5" /><br><br>
+    <input type="number" id="a5" min="-3" max="3" placeholder="喜好程度" /><br><br> 
+    <input type="email" id="emailB" placeholder="配對伴侶的 email" /><br><br>
     <button onclick="submitForm()">送出並寄信</button>
   </div>
   <div id="result"></div>
