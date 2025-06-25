@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head><meta charset="UTF-8"><title>使用者 B 偏好填答</title>
+  <style>
+    body { font-family: Arial; padding:20px }
+    .slider-container { margin-bottom:20px; }
+    input[type="range"] { width:100%; }
+  </style>
+</head>
+<body>
+  <h2>使用者 B 填答</h2>
+  <p id="loading">載入中...</p>
+  <form id="formB" style="display:none;">
+    <div id="questions"></div>
+    <button type="submit">送出並查看相似度</button>
+  </form>
+  <div id="result" style="margin-top:30px;"></div>
+  <script>
+    const code = new URLSearchParams(location.search).get("code");
+    const apiURL = "https://script.google.com/macros/s/AKfycbzK4tsqt7RjHJCBPxM8ODfYX4Ye6KeSSylsRyvZRFYw9_yKsH19J7LImvJiuMz7cQQc/exec";
+    let dataA;
+    fetch(apiURL + "?code=" + code)
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) return document.getElementById("loading").textContent = "找不到配對資料";
+        dataA = data;
+        document.getElementById("loading").remove();
+        const q = document.getElementById("questions");
+        data.behaviors.forEach((b,i) => {
+          q.insertAdjacentHTML("beforeend", `
+            <div class="slider-container">
+              <label>${b} (A=${data.aScores[i]})</label>
+              <input type="range" id="b${i}" min="-3" max="3" value="0" step="1" />
+              <span id="val${i}">0</span>
+            </div>`);
+          const s = document.getElementById(`b${i}`);
+          s.addEventListener("input", e => document.getElementById(`val${i}`).textContent = e.target.value);
+        });
+        document.getElementById("formB").style.display = "block";
+      });
+    document.getElementById("formB").addEventListener("submit", e => {
+      e.preventDefault();
+      const bScores = Array.from({length:5},(_,i)=>+document.getElementById(`b${i}`).value);
+      const diffs = dataA.aScores.map((a,i)=>Math.abs(a - bScores[i]));
+      const total = diffs.reduce((s,v)=>s+v,0);
+      const sim = ((1 - total/30)*100).toFixed(1);
+      document.getElementById("result").innerHTML =
+        `<h3>相似度：${sim}%</h3><ul>` +
+        diffs.map((d,i)=>`<li>${dataA.behaviors[i]} 差異 ${d}</li>`).join("") +
+        `</ul>`;
+      fetch(apiURL, {
+        method:"POST",
+        body: JSON.stringify({updateCode:code,bScores})
+      });
+    });
+  </script>
+</body>
+</html>

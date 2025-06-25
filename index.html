@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head><meta charset="UTF-8"><title>偏好填寫 - 使用者A</title></head>
+<body>
+  <h2>使用者 A：請填寫你的偏好與行為項目</h2>
+  <div>
+    <input id="b1" placeholder="行為 1" /><br>
+    <input id="b2" /><br>
+    <input id="b3" /><br>
+    <input id="b4" /><br>
+    <input id="b5" /><br><br>
+    <input type="number" id="a1" min="-3" max="3" /><br>
+    <input type="number" id="a2" min="-3" max="3" /><br>
+    <input type="number" id="a3" min="-3" max="3" /><br>
+    <input type="number" id="a4" min="-3" max="3" /><br>
+    <input type="number" id="a5" min="-3" max="3" /><br><br>
+    <input type="email" id="emailB" placeholder="使用者 B 的 email" /><br><br>
+    <button onclick="submitForm()">送出並寄信</button>
+  </div>
+  <div id="result"></div>
+  <script>
+    function submitForm() {
+      const data = {
+        behaviors: [b1.value, b2.value, b3.value, b4.value, b5.value],
+        aScores: [a1.value, a2.value, a3.value, a4.value, a5.value],
+        emailB: emailB.value
+      };
+      fetch("https://script.google.com/macros/s/AKfycbzK4tsqt7RjHJCBPxM8ODfYX4Ye6KeSSylsRyvZRFYw9_yKsH19J7LImvJiuMz7cQQc/exec", {
+        method: "POST",
+        body: JSON.stringify(data)
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === "success") {
+          document.getElementById("result").textContent = "成功寄出邀請給 B！";
+        } else {
+          document.getElementById("result").textContent = "送出失敗：" + (res.error || "");
+        }
+      });
+    }
+  </script>
+</body>
+</html>
