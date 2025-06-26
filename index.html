@@ -1,40 +1,161 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
-<head><meta charset="UTF-8"><title>性行為偏好配對</title></head>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>性行為喜好配對工具</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 2em; background: #f9f9f9; }
+    form { margin-bottom: 2em; background: white; padding: 1.5em; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    .question-block { margin-bottom: 1.5em; }
+    .slider-label { display: flex; justify-content: space-between; font-size: 0.9em; color: #666; }
+    .range-wrapper { display: flex; align-items: center; gap: 1em; }
+    input[type=range] { flex: 1; }
+    .range-value { width: 3em; text-align: center; font-weight: bold; }
+    .meaning-label { font-size: 0.85em; color: #007; margin-top: 0.25em; text-align: right; }
+  </style>
+</head>
 <body>
-  <h2>主要配對者：請填寫妳個人的性行為偏好類型與喜好程度，由非常喜歡(3分)-普通(0分)到非常不喜歡(-3分)</h2>
-  <div>
-    <input id="b1" placeholder="性行為偏好1" /><br>
-    <input type="number" id="a1" min="-3" max="3" placeholder="喜好程度" /><br>
-    <input id="b2" placeholder="性行為偏好2" /><br>
-    <input type="number" id="a2" min="-3" max="3" placeholder="喜好程度" /><br>
-    <input id="b3" placeholder="性行為偏好3" /><br>
-    <input type="number" id="a3" min="-3" max="3" placeholder="喜好程度" /><br>
-    <input id="b4" placeholder="性行為偏好4" /><br>
-    <input type="number" id="a4" min="-3" max="3" placeholder="喜好程度" /><br>
-    <input id="b5" placeholder="性行為偏好5" /><br><br>
-    <input type="number" id="a5" min="-3" max="3" placeholder="喜好程度" /><br><br> 
-    <input type="email" id="emailB" placeholder="配對伴侶的 email" /><br><br>
-    <button onclick="submitForm()">送出並寄信</button>
-  </div>
-  <div id="result"></div>
+  <h1>性行為喜好配對問卷</h1>
+  <form id="preferenceForm">
+    <input type="hidden" name="role" id="role" value="A" />
+    <input type="hidden" name="token" id="token" />
+
+    <script>
+      const items = [
+        "親吻(輕吻、無唾液交換)",
+        "深吻(舌吻、有唾液交換)",
+        "擁抱",
+        "舌舔身體部位",
+        "共浴",
+        "非生殖器愛撫",
+        "生殖器愛撫",
+        "對男性口交",
+        "對女性口交",
+        "以手指或其他物品插入陰道",
+        "以手指或其他物品插入肛門",
+        "陰莖-陰道性交",
+        "陰莖-肛門性交",
+        "綑綁、調教",
+        "看伴侶自慰",
+        "在伴侶面前自慰"
+      ];
+    </script>
+
+    <!-- 基本資料欄位 -->
+    <div class="question-block">
+      <label>年齡：</label>
+      <input type="number" name="age" min="16" max="99" required>
+    </div>
+
+    <div class="question-block">
+      <label>性別：</label>
+      <select name="gender" required>
+        <option value="">-- 請選擇 --</option>
+        <option value="男性">男性</option>
+        <option value="女性">女性</option>
+        <option value="其他">其他</option>
+      </select>
+    </div>
+
+    <div id="questionContainer"></div>
+
+    <div id="emailField">
+      <label>伴侶 Email配對邀請：<input type="email" name="partnerEmail" required></label>
+    </div>
+
+    <button type="submit">送出</button>
+  </form>
+
+  <canvas id="similarityChart" width="400" height="200" style="display:none"></canvas>
+
   <script>
-    function submitForm() {
-      const data = {
-        behaviors: [b1.value, b2.value, b3.value, b4.value, b5.value],
-        aScores: [a1.value, a2.value, a3.value, a4.value, a5.value],
-        emailB: emailB.value
-      };
-      fetch("https://script.google.com/macros/s/AKfycbzK4tsqt7RjHJCBPxM8ODfYX4Ye6KeSSylsRyvZRFYw9_yKsH19J7LImvJiuMz7cQQc/exec", {
+    const meaningMap = {
+      "-3": "非常不喜歡",
+      "-2": "不喜歡",
+      "-1": "有點不喜歡",
+      "0": "普通",
+      "1": "有點喜歡",
+      "2": "喜歡",
+      "3": "非常喜歡"
+    };
+
+    function updateDisplay(rangeInput) {
+      const value = rangeInput.value;
+      const valueDisplay = rangeInput.nextElementSibling;
+      const meaningDisplay = rangeInput.parentElement.nextElementSibling;
+      valueDisplay.textContent = value;
+      meaningDisplay.textContent = meaningMap[value];
+    }
+
+    const container = document.getElementById("questionContainer");
+    items.forEach((label, idx) => {
+      const name = `item${idx}`;
+      const html = `
+        <div class="question-block">
+          <label>${label}</label>
+          <div class="slider-label">
+            <span>非常不喜歡 (-3)</span>
+            <span>普通 (0)</span>
+            <span>非常喜歡 (+3)</span>
+          </div>
+          <div class="range-wrapper">
+            <input type="range" name="${name}" min="-3" max="3" value="0" step="1" oninput="updateDisplay(this)">
+            <div class="range-value">0</div>
+          </div>
+          <div class="meaning-label">普通</div>
+        </div>`;
+      container.insertAdjacentHTML("beforeend", html);
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    if (token) {
+      document.getElementById('token').value = token;
+      document.getElementById('role').value = 'B';
+      document.getElementById('emailField').style.display = 'none';
+    }
+
+    document.getElementById("preferenceForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const obj = Object.fromEntries(formData.entries());
+
+      const response = await fetch("https://script.google.com/macros/s/AKfycbwknSiTtfbmAyfkMaFIaqK9VVCLE_UURKta1fTKZO8WY9AxERa3_QJefCuzjYasDK9U/exec", {
         method: "POST",
-        body: JSON.stringify(data)
-      })
-      .then(res => res.json())
-      .then(res => {
-        if (res.status === "success") {
-          document.getElementById("result").textContent = "成功寄出邀請給 B！";
-        } else {
-          document.getElementById("result").textContent = "送出失敗：" + (res.error || "");
+        mode: "cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(obj)
+      });
+
+      try {
+        const result = await response.json();
+        if (result.similarity !== undefined) {
+          showChart(result.similarity);
+        }
+        alert(result.message);
+      } catch (err) {
+        alert("提交成功，請等待對方填寫問卷。");
+      }
+    });
+
+    function showChart(similarity) {
+      document.getElementById("similarityChart").style.display = "block";
+      new Chart(document.getElementById("similarityChart"), {
+        type: 'bar',
+        data: {
+          labels: ["性喜好相似度"],
+          datasets: [{
+            label: "% 相似度",
+            data: [similarity],
+            backgroundColor: '#36a2eb'
+          }]
+        },
+        options: {
+          scales: {
+            y: { min: 0, max: 100 }
+          }
         }
       });
     }
