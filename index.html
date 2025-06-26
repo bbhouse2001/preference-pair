@@ -21,7 +21,45 @@
   <form id="preferenceForm">
     <input type="hidden" name="role" id="role" value="A" />
     <input type="hidden" name="token" id="token" />
+<script>
+  document.getElementById("preferenceForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    console.log("[Debug] 表單送出事件觸發");
 
+    const formData = new FormData(e.target);
+    const obj = Object.fromEntries(formData.entries());
+    console.log("[Debug] 表單資料如下：", obj);
+
+    try {
+      const response = await fetch("https://script.google.com/macros/s/AKfycbwKLuRP1eSCOLJYzet0pRbttmdvwFjzUv4YPHHEW8cYABsmKtkEfgT--9EuGGNSGpZH/exec", {
+        method: "POST",
+        mode: "cors",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(obj)
+      });
+
+      const text = await response.text();
+      console.log("[Debug] GAS 回應內容：", text);
+
+      try {
+        const result = JSON.parse(text);
+        if (result.similarity !== undefined) {
+          showChart(result.similarity);
+        }
+        alert(result.message || "已提交！");
+      } catch (parseError) {
+        console.error("[Debug] JSON 解析失敗：", parseError);
+        alert("提交成功，但無法解析回應。");
+      }
+
+    } catch (err) {
+      console.error("[Debug] 傳送失敗：", err);
+      alert("送出失敗，請稍後再試或檢查網路連線。");
+    }
+  });
+</script>
     <script>
       const items = [
         "親吻(輕吻、無唾液交換)",
