@@ -31,19 +31,12 @@
     console.log("[Debug] 表單資料如下：", obj);
 
     try {
-      const response = await fetch("https://script.google.com/macros/s/AKfycbwKLuRP1eSCOLJYzet0pRbttmdvwFjzUv4YPHHEW8cYABsmKtkEfgT--9EuGGNSGpZH/exec", {
-        method: "POST",
-        mode: "cors",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(obj)
-      });
+     const query = new URLSearchParams(obj).toString();
+const response = await fetch(`https://script.google.com/macros/s/AKfycbxFrvyCHynoY--G16UNa7zfpSwDhBEgWFBwpgcAiZAMi_CcgUw1pRpHdLFx_cx1UIzi/exec?${query}`);
+const text = await response.text();
+console.log("[Debug] GAS 回應內容：", text);
 
-      const text = await response.text();
-      console.log("[Debug] GAS 回應內容：", text);
-
-      try {
+     try {
         const result = JSON.parse(text);
         if (result.similarity !== undefined) {
           showChart(result.similarity);
@@ -160,12 +153,10 @@
       const formData = new FormData(e.target);
       const obj = Object.fromEntries(formData.entries());
 
-      const response = await fetch("https://script.google.com/macros/s/AKfycbwKLuRP1eSCOLJYzet0pRbttmdvwFjzUv4YPHHEW8cYABsmKtkEfgT--9EuGGNSGpZH/exec", {
-        method: "POST",
-        mode: "cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(obj)
-      });
+        const query = new URLSearchParams(obj).toString();
+const response = await fetch(`https://script.google.com/macros/s/AKfycbxFrvyCHynoY--G16UNa7zfpSwDhBEgWFBwpgcAiZAMi_CcgUw1pRpHdLFx_cx1UIzi/exec?${query}`);
+const text = await response.text();
+console.log("[Debug] GAS 回應內容：", text);
 
       try {
         const result = await response.json();
